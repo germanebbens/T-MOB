@@ -1,0 +1,31 @@
+version: '3'
+services:
+  db:
+    image: mysql:8
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_DATABASE: 'tmobDB'
+      MYSQL_ROOT_PASSWORD: 'password'
+    healthcheck:
+            test: ["CMD", "mysqladmin" ,"ping", "-h", "localhost"]
+            timeout: 20s
+            retries: 10
+
+  cache:
+    image: memcached:1.6
+    ports:
+      - 11211:11211
+
+  web:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    command: python manage.py runserver 0.0.0.0:8000
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/t_mobApp
+    depends_on:
+      db:
+        condition: service_healthy
